@@ -396,21 +396,27 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		//calculating gas related values
 		//Wanna know a secret? See that max() to zero? it's used for error checking. If we get a mol count in the negative, we'll get a divide by zero error
 		combined_gas = max(removed.total_moles(), 0)
-
 		//This is more error prevention, according to all known laws of atmos, gas_mix.remove() should never make negative mol values.
 		//But this is tg
 
 		//Lets get the proportions of the gasses in the mix
 		//They range between 0 and 1
 		plasmacomp = max(removed.gases[/datum/gas/plasma][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/plasma][MOLES] > combined_gas)
 		o2comp = max(removed.gases[/datum/gas/oxygen][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/oxygen][MOLES] > combined_gas)
 		co2comp = max(removed.gases[/datum/gas/carbon_dioxide][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/carbon_dioxide][MOLES] > combined_gas)
 		pluoxiumcomp = max(removed.gases[/datum/gas/pluoxium][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/pluoxium][MOLES] > combined_gas)
 		tritiumcomp = max(removed.gases[/datum/gas/tritium][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/tritium][MOLES] > combined_gas)
 		bzcomp = max(removed.gases[/datum/gas/bz][MOLES]/combined_gas, 0)
-
+		if(removed.gases[/datum/gas/bz][MOLES] > combined_gas)
 		n2ocomp = max(removed.gases[/datum/gas/nitrous_oxide][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/nitrous_oxide][MOLES] > combined_gas)
 		n2comp = max(removed.gases[/datum/gas/nitrogen][MOLES]/combined_gas, 0)
+		if(removed.gases[/datum/gas/nitrogen][MOLES] > combined_gas)
 
 		//We're concerned about pluoxium being too easy to abuse at low percents, so we make sure there's a substantial amount.
 		if(pluoxiumcomp >= 0.15)
@@ -464,7 +470,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		power = max((removed.temperature * temp_factor / T0C) * gasmix_power_ratio + power, 0)
 
 		if(prob(50))
-			//1 + (tritRad + pluoxDampen * bzDampen * o2Rad * plasmaRad / (10 - bzrads))
+			//1 + ((tritRad + pluoxDampen + bzDampen + o2Rad + plasmaRad) / (10 - bzrads)))
 			radiation_pulse(src, power * max(0, (1 + (power_transmission_bonus/(10-(bzcomp * BZ_RADIOACTIVITY_MODIFIER))))))// RadModBZ(500%)
 		if(bzcomp >= 0.4 && prob(30 * bzcomp))
 			src.fire_nuclear_particle()        // Start to emit radballs at a maximum of 30% chance per tick
