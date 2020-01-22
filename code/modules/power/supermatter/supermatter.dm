@@ -885,15 +885,127 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	if(zap_str < zap_cutoff)
 		return
 	var/datum/target
+	var/target_type = (LOWEST)
 	var/list/arctargets = list()
 	//Making a new copy so additons further down the recursion do not mess with other arcs
 	var/list/targets_copy = targets_hit.Copy()
 	//Lets put this ourself into the do not hit list, so we don't curve back to hit the same thing twice with one arc
 	targets_copy += zapstart
-	arctargets = zap_find_targets(zapstart, range, targets_copy)
+	for(var/datum/test in oview(zapstart, range))
+		if(test in targets_hit || QDELETED(test))
+			continue
+
+		if(istype(test, /obj/vehicle/ridden/bicycle/))
+			var/obj/vehicle/ridden/bicycle/bike = test
+			if(!(bike.obj_flags & BEING_SHOCKED) && bike.can_buckle)//God's not on our side cause he hates idiots.
+				if(target_type != BIKE)
+					arctargets = list()
+				arctargets += test
+				target_type = BIKE
+
+		if(target_type > COIL)
+			continue
+
+		if(istype(test, /obj/machinery/power/tesla_coil/))
+			var/obj/machinery/power/tesla_coil/coil = test
+			if(coil.anchored && !(coil.obj_flags & BEING_SHOCKED) && !coil.panel_open && prob(70))//Diversity of death
+				if(target_type != COIL)
+					arctargets = list()
+				arctargets += test
+				target_type = COIL
+
+		if(target_type > ROD)
+			continue
+
+		if(istype(test, /obj/machinery/power/grounding_rod/))
+			var/obj/machinery/power/grounding_rod/rod = test
+			//We're adding machine damaging effects, rods need to be surefire
+			if(rod.anchored && !rod.panel_open)
+				if(target_type != ROD)
+					arctargets = list()
+				arctargets += test
+				target_type = ROD
+
+		if(target_type > LIVING)
+			continue
+
+		if(istype(test, /mob/living/))
+			var/mob/living/alive = test
+			if(!(HAS_TRAIT(alive, TRAIT_TESLA_SHOCKIMMUNE)) && !(alive.flags_1 & SHOCKED_1) && alive.stat != DEAD && prob(20))//let's not hit all the engineers with every beam and/or segment of the arc
+				if(target_type != LIVING)
+					arctargets = list()
+				arctargets += test
+				target_type = LIVING
+
+		if(target_type > MACHINERY)
+			continue
+
+		if(istype(test, /obj/machinery/))
+			var/obj/machinery/machine = test
+			if(!(machine.obj_flags & BEING_SHOCKED) && prob(40))
+				if(target_type != MACHINERY)
+					arctargets = list()
+				arctargets += test
+				target_type = MACHINERY
+
+		if(target_type > OBJECT)
+			continue
+
+		if(istype(test, /obj/))
+			var/obj/object = test
+			if(!(object.obj_flags & BEING_SHOCKED))
+				if(target_type != OBJECT)
+					arctargets = list()
+				arctargets += test
+				target_type = OBJECT
+
 	if(arctargets.len)//Pick from our pool
 		target = pick(arctargets)
-		zap_str = zap_act_on(zapstart, target, zap_str, zap_flags)
+	if(target && !QDELETED(target))//If we found something
+		//Do the animation to zap to it from here
+		zapstart.Beam(target, icon_state=zap_icon, time=5)
+		var/zapdir = get_dir(zapstart, target)
+		if(zapdir)
+			. = zapdir
+
+		//Going boom should be rareish
+		if(prob(80))
+			zap_flags &= ~ZAP_MACHINE_EXPLOSIVE
+		if(istype(target, /obj/machinery/power/tesla_coil))
+			var/obj/machinery/power/tesla_coil/coil = target
+			//In the best situation we can expect this to grow up to 2120kw before a delam/IT'S GONE TOO FAR FRED SHUT IT DOWN
+			//The formula for power gen is zap_str * zap_mod / 2 * capacitor rating, between 1 and 4
+			var/multi = 10
+			if(power > SEVERE_POWER_PENALTY_THRESHOLD)
+				multi *= 2
+				if(power > CRITICAL_POWER_PENALTY_THRESHOLD)
+					multi *= 2
+			coil.zap_act(zap_str * multi, zap_flags, list())
+			zap_str /= 3 //Coils should take a lot out of the power of the zap
+
+		else if(istype(target, /obj/machinery/power/grounding_rod))
+			var/obj/machinery/power/grounding_rod/rod = target
+			//We can expect this to do very little, maybe shock the poor soul buckled to it, but that's all.
+			//This is one of our endpoints, if the bolt hits a grounding rod, it stops jumping
+			rod.zap_act(zap_str, zap_flags, list())
+			return
+
+		else if(isliving(target))//If we got a fleshbag on our hands
+			var/mob/living/mob = target
+			mob.set_shocked()
+			addtimer(CALLBACK(mob, /mob/living/proc/reset_shocked), 10)
+			//3 shots a human with no resistance. 2 to crit, one to death. This is at at least 10000 power
+			//Does 10 damage at the least
+			var/shock_damage = ((zap_flags & ZAP_MOB_DAMAGE) ? (power / 200) - 10 : rand(5,10))
+			mob.electrocute_act(shock_damage, "Supermatter Discharge Bolt", 1,  ((zap_flags & ZAP_MOB_STUN) ? SHOCK_TESLA : SHOCK_NOSTUN))
+			zap_str /= 1.5 //Meatsacks are conductive, makes working in pairs more destructive
+
+		else if(isobj(target))
+			var/obj/junk = target
+			junk.zap_act(zap_str, zap_flags, list())
+			zap_str /= 2 // worse then living things, better then coils
+		else
+			zap_str = 0
 		//This gotdamn variable is a boomer and keeps giving me problems
 		var/turf/T = get_turf(target)
 		var/pressure = 0
