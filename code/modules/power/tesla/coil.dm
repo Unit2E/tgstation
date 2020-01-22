@@ -95,7 +95,7 @@
 		zap_buckle_check(power)
 		playsound(src.loc, 'sound/magic/lightningshock.ogg', 100, TRUE, extrarange = 5)
 		if(!(zap_flags & ZAP_IS_TESLA))
-			return power_produced
+			return
 		tesla_zap(src, 5, power_produced, zap_flags, shocked_targets)
 	else
 		..()
