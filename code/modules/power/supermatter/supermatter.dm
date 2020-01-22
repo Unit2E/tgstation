@@ -996,7 +996,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if(istype(target, /obj/machinery/power/tesla_coil))
 			var/obj/machinery/power/tesla_coil/coil = target
 			//In the best situation we can expect this to grow up to 2120kw before a delam/IT'S GONE TOO FAR FRED SHUT IT DOWN
-			//The formula for power gen is zap_str * zap_mod * 15 / 2 * capacitor rating, between 1 and 4
+			//The formula for power gen is zap_str * zap_mod / 2 * capacitor rating, between 1 and 4
 			var/multi = 10
 			if(power > SEVERE_POWER_PENALTY_THRESHOLD)
 				multi *= 2
