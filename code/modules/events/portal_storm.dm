@@ -21,6 +21,23 @@
 	hostile_types = list(/mob/living/simple_animal/hostile/construct/armored/hostile = 8,\
 						/mob/living/simple_animal/hostile/construct/wraith/hostile = 6)
 
+/datum/round_event_control/portal_storm_green
+	name = "Test do not mergies"
+	typepath = /datum/round_event/portal_storm/portal_storm_green
+	weight = 0
+	max_occurrences = 0
+
+/datum/round_event/portal_storm/portal_storm_green
+	boss_types = list(/mob/living/simple_animal/hostile/jungle/leaper = 2, \
+						/mob/living/simple_animal/hostile/jungle/mega_arachnid = 3, \
+						/mob/living/simple_animal/hostile/asteroid/hivelord = 3)
+	hostile_types = list(/mob/living/simple_animal/hostile/headcrab = 1, \
+						/mob/living/simple_animal/hostile/netherworld = 4, \
+						/mob/living/simple_animal/hostile/asteroid/fugu = 5, \
+						/mob/living/simple_animal/hostile/asteroid/basilisk = 3, \
+						/mob/living/simple_animal/hostile/asteroid/gutlunch = 4, \
+						/mob/living/simple_animal/hostile/statue = 4)
+
 /datum/round_event/portal_storm
 	startWhen = 7
 	endWhen = 999
@@ -54,6 +71,27 @@
 		hostiles_spawn += get_random_station_turf()
 
 	next_boss_spawn = startWhen + CEILING(2 * number_of_hostiles / number_of_bosses, 1)
+
+/datum/round_event/portal_storm/portal_storm_green/setup()
+	storm = mutable_appearance('icons/obj/tesla_engine/energy_ball.dmi', "energy_ball_fast", FLY_LAYER)
+	storm.color = "#00FF00"
+
+	number_of_bosses = 0
+	for(var/boss in boss_types)
+		number_of_bosses += boss_types[boss]
+
+	number_of_hostiles = 0
+	for(var/hostile in hostile_types)
+		number_of_hostiles += hostile_types[hostile]
+
+	while(number_of_bosses > boss_spawn.len)
+		boss_spawn += get_random_station_turf()
+
+	while(number_of_hostiles > hostiles_spawn.len)
+		hostiles_spawn += get_random_station_turf()
+
+	next_boss_spawn = startWhen + CEILING(2 * number_of_hostiles / number_of_bosses, 1)
+
 
 /datum/round_event/portal_storm/announce(fake)
 	set waitfor = 0
