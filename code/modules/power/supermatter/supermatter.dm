@@ -1022,9 +1022,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			zap_str = 0
 		//This gotdamn variable is a boomer and keeps giving me problems
 		var/turf/T = get_turf(target)
-		var/pressure = 0 //Will go unused
-		if(T && !isspaceturf(T))
-			pressure = max(1,T.return_air().return_pressure())
+		var/pressure = T.return_air().return_pressure()
 		//We get our range with the strength of the zap and the pressure, the lower the former and the higher the latter the better
 		var/new_range = 4
 		if(pressure > 0)
