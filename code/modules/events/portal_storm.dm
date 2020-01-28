@@ -72,27 +72,6 @@
 
 	next_boss_spawn = startWhen + CEILING(2 * number_of_hostiles / number_of_bosses, 1)
 
-/datum/round_event/portal_storm/portal_storm_green/setup()
-	storm = mutable_appearance('icons/obj/tesla_engine/energy_ball.dmi', "energy_ball_fast", FLY_LAYER)
-	storm.color = "#00FF00"
-
-	number_of_bosses = 0
-	for(var/boss in boss_types)
-		number_of_bosses += boss_types[boss]
-
-	number_of_hostiles = 0
-	for(var/hostile in hostile_types)
-		number_of_hostiles += hostile_types[hostile]
-
-	while(number_of_bosses > boss_spawn.len)
-		boss_spawn += get_random_station_turf()
-
-	while(number_of_hostiles > hostiles_spawn.len)
-		hostiles_spawn += get_random_station_turf()
-
-	next_boss_spawn = startWhen + CEILING(2 * number_of_hostiles / number_of_bosses, 1)
-
-
 /datum/round_event/portal_storm/announce(fake)
 	set waitfor = 0
 	sound_to_playing_players('sound/magic/lightning_chargeup.ogg')

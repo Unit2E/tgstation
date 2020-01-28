@@ -86,6 +86,7 @@
 #define DEFAULT_ZAP_ICON_STATE "sm_arc"
 #define SLIGHTLY_CHARGED_ZAP_ICON_STATE "sm_arc_supercharged"
 #define OVER_9000_ZAP_ICON_STATE "sm_arc_dbz_referance" //Witty I know
+#define GOOORDON_ZAP_ICON_STATE "sm_arc_mesa" //Really witty I know
 
 GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
@@ -313,20 +314,27 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			SEND_SOUND(M, 'sound/magic/charge.ogg')
 			to_chat(M, "<span class='boldannounce'>You feel reality distort for a moment...</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "delam", /datum/mood_event/delam)
-	if(combined_gas > MOLE_PENALTY_THRESHOLD)
-		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
+	if(combined_gas > MOLE_PENALTY_THRESHOLD && power > CRITICAL_POWER_PENALTY_THRESHOLD)
+		investigate_log("has collapsed into a resonance cascade.", INVESTIGATE_SUPERMATTER)
 		if(T)
+			var/datum/round_event_control/portal_storm_green/subtle_i_know = new()
+			subtle_i_know.runEvent()
+			return //No boom for me sir
+	else if(combined_gas > MOLE_PENALTY_THRESHOLD)
+		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
+		if(T) //If something fucks up we blow anyhow. This fix is 4 years old and none ever said why it's here. help.
 			var/obj/singularity/S = new(T)
 			S.energy = 800
 			S.consume(src)
-	else
-		investigate_log("has exploded.", INVESTIGATE_SUPERMATTER)
-		explosion(get_turf(T), explosion_power * max(gasmix_power_ratio, 0.205) * 0.5 , explosion_power * max(gasmix_power_ratio, 0.205) + 2, explosion_power * max(gasmix_power_ratio, 0.205) + 4 , explosion_power * max(gasmix_power_ratio, 0.205) + 6, 1, 1)
-		if(power > POWER_PENALTY_THRESHOLD)
-			investigate_log("has spawned additional energy balls.", INVESTIGATE_SUPERMATTER)
+			return
+	else if(power > POWER_PENALTY_THRESHOLD)
+		investigate_log("has spawned additional energy balls.", INVESTIGATE_SUPERMATTER)
+		if(T)
 			var/obj/singularity/energy_ball/E = new(T)
 			E.energy = power
-		qdel(src)
+	investigate_log("has exploded.", INVESTIGATE_SUPERMATTER)
+	explosion(get_turf(T), explosion_power * max(gasmix_power_ratio, 0.205) * 0.5 , explosion_power * max(gasmix_power_ratio, 0.205) + 2, explosion_power * max(gasmix_power_ratio, 0.205) + 4 , explosion_power * max(gasmix_power_ratio, 0.205) + 6, 1, 1)
+	qdel(src)
 
 //this is here to eat arguments
 /obj/machinery/power/supermatter_crystal/proc/call_explode()
@@ -551,6 +559,10 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					//Machines go boom
 					flags |= (ZAP_MOB_STUN | ZAP_MACHINE_EXPLOSIVE)
 					zap_count += 1
+				if(combined_gas > MOLE_PENALTY_THRESHOLD)
+					zap_icon = GOOORDON_ZAP_ICON_STATE
+					flags |= (ZAP_MOB_STUN | ZAP_MACHINE_EXPLOSIVE)
+					zap_count += 2
 		//Now we deal with damage shit
 		if (damage > damage_penalty_point && prob(20))
 			zap_count += 1
@@ -597,6 +609,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 			if(combined_gas > MOLE_PENALTY_THRESHOLD)
 				radio.talk_into(src, "Warning: Critical coolant mass reached.", engineering_channel)
+				if(power > CRITICAL_POWER_PENALTY_THRESHOLD)
+					radio.talk_into(src, "Warning: Anti-mass spectrometer showing a five percent gain", engineering_channel)
 		//Boom (Mind blown)
 		if(damage > explosion_point)
 			countdown()
