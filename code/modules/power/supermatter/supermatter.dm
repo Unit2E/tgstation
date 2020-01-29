@@ -319,6 +319,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if(T)
 			var/datum/round_event_control/portal_storm_green/subtle_i_know = new()
 			subtle_i_know.runEvent()
+			qdel(src)
 			return //No boom for me sir
 	else if(combined_gas > MOLE_PENALTY_THRESHOLD)
 		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
