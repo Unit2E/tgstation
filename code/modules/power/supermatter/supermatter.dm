@@ -314,20 +314,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			SEND_SOUND(M, 'sound/magic/charge.ogg')
 			to_chat(M, "<span class='boldannounce'>You feel reality distort for a moment...</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "delam", /datum/mood_event/delam)
-	if(combined_gas > MOLE_PENALTY_THRESHOLD && power > CRITICAL_POWER_PENALTY_THRESHOLD)
-		investigate_log("has collapsed into a resonance cascade.", INVESTIGATE_SUPERMATTER)
-		if(T)
-			var/datum/round_event_control/portal_storm_mesa/subtle_i_know = new()
-			subtle_i_know.runEvent()
-			qdel(src)
-			return //No boom for me sir
-	else if(combined_gas > MOLE_PENALTY_THRESHOLD)
+	if(combined_gas > MOLE_PENALTY_THRESHOLD)
 		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
 		if(T) //If something fucks up we blow anyhow. This fix is 4 years old and none ever said why it's here. help.
 			var/obj/singularity/S = new(T)
 			S.energy = 800
 			S.consume(src)
-			return
+			return //No boom for me sir
 	else if(power > POWER_PENALTY_THRESHOLD)
 		investigate_log("has spawned additional energy balls.", INVESTIGATE_SUPERMATTER)
 		if(T)
@@ -560,10 +553,9 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					//Machines go boom
 					flags |= (ZAP_MOB_STUN | ZAP_MACHINE_EXPLOSIVE)
 					zap_count += 1
-				if(combined_gas > MOLE_PENALTY_THRESHOLD)
-					zap_icon = GOOORDON_ZAP_ICON_STATE
-					flags |= (ZAP_MOB_STUN | ZAP_MACHINE_EXPLOSIVE)
-					zap_count += 2
+					if(combined_gas > MOLE_PENALTY_THRESHOLD)
+						zap_icon = GOOORDON_ZAP_ICON_STATE
+						zap_count += 2
 		//Now we deal with damage shit
 		if (damage > damage_penalty_point && prob(20))
 			zap_count += 1
@@ -598,16 +590,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			else if(damage >= damage_archived) // The damage is still going up
 				radio.talk_into(src, "[warning_alert] Integrity: [get_integrity()]%", engineering_channel)
 				lastwarning = REALTIMEOFDAY - (WARNING_DELAY * 5)
-
 			else                                                 // Phew, we're safe
 				radio.talk_into(src, "[safe_alert] Integrity: [get_integrity()]%", engineering_channel)
 				lastwarning = REALTIMEOFDAY
-
 			if(power > POWER_PENALTY_THRESHOLD)
 				radio.talk_into(src, "Warning: Hyperstructure has reached dangerous power level.", engineering_channel)
 				if(powerloss_inhibitor < 0.5)
 					radio.talk_into(src, "DANGER: CHARGE INERTIA CHAIN REACTION IN PROGRESS.", engineering_channel)
-
 			if(combined_gas > MOLE_PENALTY_THRESHOLD)
 				radio.talk_into(src, "Warning: Critical coolant mass reached.", engineering_channel)
 				if(power > CRITICAL_POWER_PENALTY_THRESHOLD)
