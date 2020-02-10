@@ -86,7 +86,6 @@
 #define DEFAULT_ZAP_ICON_STATE "sm_arc"
 #define SLIGHTLY_CHARGED_ZAP_ICON_STATE "sm_arc_supercharged"
 #define OVER_9000_ZAP_ICON_STATE "sm_arc_dbz_referance" //Witty I know
-#define GOOORDON_ZAP_ICON_STATE "sm_arc_mesa" //Really witty I know
 
 GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
@@ -553,9 +552,6 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					//Machines go boom
 					flags |= (ZAP_MOB_STUN | ZAP_MACHINE_EXPLOSIVE)
 					zap_count += 1
-					if(combined_gas > MOLE_PENALTY_THRESHOLD)
-						zap_icon = GOOORDON_ZAP_ICON_STATE
-						zap_count += 2
 		//Now we deal with damage shit
 		if (damage > damage_penalty_point && prob(20))
 			zap_count += 1
@@ -599,8 +595,6 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					radio.talk_into(src, "DANGER: CHARGE INERTIA CHAIN REACTION IN PROGRESS.", engineering_channel)
 			if(combined_gas > MOLE_PENALTY_THRESHOLD)
 				radio.talk_into(src, "Warning: Critical coolant mass reached.", engineering_channel)
-				if(power > CRITICAL_POWER_PENALTY_THRESHOLD)
-					radio.talk_into(src, "Warning: Anti-mass spectrometer showing a five percent gain", engineering_channel)
 		//Boom (Mind blown)
 		if(damage > explosion_point)
 			countdown()
